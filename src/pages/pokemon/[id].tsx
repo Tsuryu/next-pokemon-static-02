@@ -81,14 +81,28 @@ export const getStaticPaths: GetStaticPaths = async () => {
         id
       }
     })),
-    fallback: false
+    fallback: 'blocking'
   };
 };
 
-export const getStaticProps: GetStaticProps = async (context) => ({
-  props: {
-    pokemon: await pokemonUtils.getPokemonInfo(context.params?.id as string)
+export const getStaticProps: GetStaticProps = async (context) => {
+  const pokemon = await pokemonUtils.getPokemonInfo(context.params?.id as string);
+
+  if (!pokemon) {
+    return {
+      redirect: {
+        destination: '/',
+        permanent: false
+      }
+    };
   }
-});
+
+  return {
+    props: {
+      pokemon
+    },
+    revalidate: 86400 // 60 * 60 * 24
+  };
+};
 
 export default PokemonPage;
